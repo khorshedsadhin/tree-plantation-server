@@ -7,7 +7,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // TODO: 2.1
-const serviceAccount = require("./firebase-admin-sdk.json");
+const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
