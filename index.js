@@ -6,7 +6,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// TODO: 2.1
+// TODO: 6
 const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
 const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
@@ -113,6 +113,22 @@ async function run() {
       res.send(result);
     })
 
+    app.patch("/events/join/:id", verifyFireBaseToken, async(req, res) => {
+      const id = req.params.id;
+      const userEmail = req.user_email;
+
+      const filter = {_id: new ObjectId(id)};
+
+      const updateDoc = {
+        $addToSet: {
+          joinedUsers: userEmail
+        }
+      };
+
+      const result = await eventsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
     app.get("/my-events", verifyFireBaseToken, async (req, res) => {
       const loggedEmail = req.user_email;
       const queryEmail = req.query.email;
@@ -125,7 +141,7 @@ async function run() {
       const myEvents = await eventsCollection.find(query).toArray();
 
       res.send(myEvents);
-    })
+    });
 
   }
   finally {
