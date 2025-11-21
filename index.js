@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 var admin = require("firebase-admin");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -76,6 +76,42 @@ async function run() {
       const result = await usersCollection.insertOne(newUser);
       res.send(result);
     });
+
+    app.post("/events", verifyFireBaseToken, async(req, res) => {
+      const eventData = req.body;
+
+      if(eventData.creatorEmail !== req.user_email) {
+        return res.status(403).send({message: "forbidden access"});
+      }
+
+      const newEvent = {
+        ...eventData,
+        eventDate: new Date(eventData.eventDate),
+        joinedUsers: [],
+        createdAt: new Date()
+      };
+
+      const result = await eventsCollection.insertOne(newEvent);
+      res.send(result);
+    });
+
+    app.get("/events/upcoming", async(req, res) => {
+      const currentDate = new Date();
+
+      const query = {eventDate : {$gte: currentDate}};
+      const result = await eventsCollection.find(query).sort({eventDate: 1}).toArray();
+
+      res.send(result);
+    })
+
+    app.get("/events/:id", async(req, res) => {
+      const id = req.params.id;
+
+      const query = {_id: new ObjectId(id)};
+
+      const result = await eventsCollection.findOne(query);
+      res.send(result);
+    })
 
     app.get("/my-events", verifyFireBaseToken, async (req, res) => {
       const loggedEmail = req.user_email;
