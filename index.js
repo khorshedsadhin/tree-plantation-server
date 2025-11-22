@@ -147,16 +147,31 @@ async function run() {
 
     app.delete("/events/:id", verifyFireBaseToken, async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
+      const email = req.user_email;
+
+      const query = {
+        _id: new ObjectId(id),
+        creatorEmail: email
+      }
 
       const result = await eventsCollection.deleteOne(query);
+
+      if(result.deletedCount === 0) {
+        return res.status(403).send({ message: "forbidden: you cannot delete this event" })
+      }
+
       res.send(result);
     });
 
     app.put("/events/:id", verifyFireBaseToken, async (req, res) => {
       const id = req.params.id;
+      const email = req.user_email;
       const eventData = req.body;
-      const filter = { _id: new ObjectId(id) };
+      
+      const filter = { 
+        _id: new ObjectId(id),
+        creatorEmail: email
+      };
 
       const updateDoc = {
         $set: {
@@ -170,6 +185,10 @@ async function run() {
       }
 
       const result = await eventsCollection.updateOne(filter, updateDoc);
+      if (result.matchedCount === 0) {
+        return res.status(403).send({ message: "forbidden: you cannot edit this event" });
+      }
+
       res.send(result);
     });
 
