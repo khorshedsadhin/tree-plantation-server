@@ -6,7 +6,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// TODO: 6
+// TODO: 8
 const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
 const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
@@ -97,8 +97,18 @@ async function run() {
 
     app.get("/events/upcoming", async(req, res) => {
       const currentDate = new Date();
+      const { search, type } = req.query;
 
-      const query = {eventDate : {$gte: currentDate}};
+      let query = {eventDate : {$gte: currentDate}};
+
+      if(search) {
+        query.title = { $regex: search, $option: "i" };
+      }
+
+      if(type) {
+        query.eventType = type;
+      }
+
       const result = await eventsCollection.find(query).sort({eventDate: 1}).toArray();
 
       res.send(result);
