@@ -102,7 +102,7 @@ async function run() {
       let query = {eventDate : {$gte: currentDate}};
 
       if(search) {
-        query.title = { $regex: search, $option: "i" };
+        query.title = { $regex: search, $options: "i" };
       }
 
       if(type) {
