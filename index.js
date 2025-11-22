@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-var admin = require("firebase-admin");
+const admin = require("firebase-admin");
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -130,17 +130,47 @@ async function run() {
     })
 
     app.get("/my-events", verifyFireBaseToken, async (req, res) => {
-      const loggedEmail = req.user_email;
-      const queryEmail = req.query.email;
+      const email = req.user_email;
+      const query = {creatorEmail : email};
 
-      if(queryEmail !== loggedEmail) {
-        return res.status(403).send({message: "forbidden access"});
+      const result = await eventsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/joined-events", verifyFireBaseToken, async(req, res) => {
+      const email = req.user_email;
+      const query = {joinedUsers: email };
+      
+      const result = await eventsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete("/events/:id", verifyFireBaseToken, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      const result = await eventsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.put("/events/:id", verifyFireBaseToken, async (req, res) => {
+      const id = req.params.id;
+      const eventData = req.body;
+      const filter = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $set: {
+          title: eventData.title,
+          eventType: eventData.eventType,
+          location: eventData.location,
+          thumbnail: eventData.thumbnail,
+          description: eventData.description,
+          eventDate: new Date(eventData.eventDate)
+        }
       }
 
-      const query = {creatorEmail : loggedEmail};
-      const myEvents = await eventsCollection.find(query).toArray();
-
-      res.send(myEvents);
+      const result = await eventsCollection.updateOne(filter, updateDoc);
+      res.send(result);
     });
 
   }
