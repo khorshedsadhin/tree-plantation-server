@@ -211,8 +211,8 @@ run().catch(console.dir);
 
 app.get('/favicon.ico', (req, res) => res.status(204).end()); // for vercel
 
-app.listen(port, () => {
-  console.log(`Tree plantation server is running on port ${port}`);
-})
+// app.listen(port, () => {
+//   console.log(`Tree plantation server is running on port ${port}`);
+// })
 
-module.exports = app;
+export default app;
