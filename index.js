@@ -6,7 +6,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// TODO: 8
+// TODO: 9
 const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
 const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
@@ -39,7 +39,7 @@ const verifyFireBaseToken = async (req, res, next) => {
 
 };
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@learningbackend.uwychz3.mongodb.net/?appName=learningBackend`;
+const uri = `${process.env.DB_URI}`;
 
 const client = new MongoClient(uri, {
   serverApi: {
